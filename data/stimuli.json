@@ -1,0 +1,8 @@
+{
+  "animals": ["dog", "bird", "cow"],
+  "nature": ["mountain", "river", "sun"],
+  "food": ["meat", "water", "bread"],
+  "furniture": ["table", "cupboard"],
+  "clothes": ["trousers", "umbrella"],
+  "container": ["bottle", "sack"]
+}
