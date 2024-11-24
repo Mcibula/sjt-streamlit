@@ -52,8 +52,9 @@ def initial_view() -> None:
     st.title('Semantic Judgement Task')
 
     st.markdown(
-        'In this task, please evaluate the semantic relatedness of pairs of words '
-        'you will see on the screen. For example:'
+        'In this task, please evaluate the semantic relatedness of pairs of words you will see on the screen. '
+        'The task is not timed; however, try to provide quick, intuitive judgement without overthinking. '
+        'For example:'
     )
     st.html(
         """
