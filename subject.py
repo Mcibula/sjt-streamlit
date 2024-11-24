@@ -3,6 +3,7 @@ import json
 import random
 import uuid
 
+import numpy as np
 import pandas as pd
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
@@ -171,7 +172,7 @@ if 'pairs' not in st.session_state:
 
     st.session_state['pairs'] = pairs
     st.session_state['adj_matrix'] = pd.DataFrame(
-        data=0.0,
+        data=np.eye(len(words)),
         index=pd.Index(words),
         columns=pd.Index(words)
     )
