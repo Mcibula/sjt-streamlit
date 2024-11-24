@@ -1,21 +1,48 @@
 import itertools
 import json
 import random
+import uuid
 
+import pandas as pd
 import streamlit as st
+from streamlit_gsheets import GSheetsConnection
 
 
 def restart() -> None:
+    adj_matrix = st.session_state.adj_matrix
+    stim_a, stim_b = st.session_state.stimuli
+    rel = round(st.session_state.relatedness / 100, 2)
+
+    adj_matrix.at[stim_a, stim_b] = rel
+    adj_matrix.at[stim_b, stim_a] = rel
+
+    conn.create(
+        worksheet=f'{st.session_state.user_name}_{st.session_state.user_id}',
+        data=st.session_state.adj_matrix.reset_index()
+    )
+
+    st.session_state.relatedness_slider = 50
     st.session_state.current_index = 0
 
 
 def start() -> None:
-    if st.session_state.name.strip():
-        st.session_state.relatedness_slider = 50
-        st.session_state.current_index += 1
+    if not st.session_state.name.strip():
+        return
+
+    st.session_state.user_name = st.session_state.name
+    st.session_state.user_id = str(uuid.uuid4()).split('-')[0]
+    st.session_state.relatedness_slider = 50
+    st.session_state.current_index += 1
 
 
 def next_question():
+    adj_matrix = st.session_state.adj_matrix
+    stim_a, stim_b = st.session_state.stimuli
+    rel = round(st.session_state.relatedness / 100, 2)
+
+    adj_matrix.at[stim_a, stim_b] = rel
+    adj_matrix.at[stim_b, stim_a] = rel
+
     st.session_state.relatedness_slider = 50
     st.session_state.current_index += 1
 
@@ -74,11 +101,12 @@ def question_view() -> None:
         key='relatedness_slider'
     )
     st.session_state.relatedness = rel
+    st.session_state.stimuli = (stim_a, stim_b)
 
     if st.session_state.current_index < len(pairs):
         st.button('Submit', on_click=next_question)
     else:
-        st.button('Restart', on_click=restart)
+        st.button('Submit', on_click=restart)
 
 
 st.set_page_config(
@@ -109,6 +137,7 @@ st.html(
         margin-top: 6em;
         margin-bottom: 6em;
     }
+    
     .stim-col {
         display: flex;
         flex-direction: column;
@@ -118,6 +147,10 @@ st.html(
         font-weight: 600;
         line-height: 1.2;
         text-align: center;
+    }
+    
+    div:has(> div[role="slider"]) {
+        background: rgba(172, 177, 195, 0.25);
     }
     </style>
     """
@@ -137,8 +170,16 @@ if 'pairs' not in st.session_state:
     random.shuffle(pairs)
 
     st.session_state['pairs'] = pairs
+    st.session_state['adj_matrix'] = pd.DataFrame(
+        data=0.0,
+        index=pd.Index(words),
+        columns=pd.Index(words)
+    )
 else:
     pairs = st.session_state['pairs']
+    adj_matrix = st.session_state['adj_matrix']
+
+conn = st.connection('gsheets', type=GSheetsConnection)
 
 if st.session_state.current_index == 0:
     initial_view()
